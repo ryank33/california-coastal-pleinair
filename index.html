@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>California Coastal Plein Air — Gallery</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Georgia',serif;background:#f5f0eb;color:#2c2c2c}
+
+/* Hero */
+.hero{position:relative;height:50vh;min-height:340px;background:#1a1a2e;display:flex;align-items:center;justify-content:center;text-align:center;overflow:hidden}
+.hero::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(26,26,46,.85),rgba(44,62,80,.7))}
+.hero-content{position:relative;z-index:1;padding:2rem}
+.hero h1{font-size:clamp(2rem,5vw,3.5rem);color:#fff;font-weight:400;letter-spacing:.04em;margin-bottom:.5rem}
+.hero .subtitle{font-size:clamp(1rem,2.5vw,1.4rem);color:rgba(255,255,255,.7);font-style:italic;font-weight:300}
+.hero .divider{width:80px;height:2px;background:linear-gradient(90deg,transparent,#c9a96e,transparent);margin:1.2rem auto}
+
+/* Gallery Grid */
+.gallery{max-width:1400px;margin:0 auto;padding:3rem 1.5rem}
+.gallery-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:1.5rem}
+.card{background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.08);transition:transform .3s,box-shadow .3s;cursor:pointer}
+.card:hover{transform:translateY(-4px);box-shadow:0 8px 30px rgba(0,0,0,.15)}
+.card img{width:100%;aspect-ratio:4/3;object-fit:cover;display:block}
+.card-info{padding:1rem 1.2rem}
+.card-info h3{font-size:1rem;font-weight:600;margin-bottom:.3rem}
+.card-info p{font-size:.85rem;color:#666;line-height:1.4}
+
+/* Lightbox */
+.lightbox{display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.92);align-items:center;justify-content:center;flex-direction:column}
+.lightbox.active{display:flex}
+.lightbox img{max-width:90vw;max-height:80vh;border-radius:6px;box-shadow:0 0 40px rgba(0,0,0,.5)}
+.lightbox .caption{color:#fff;margin-top:1rem;font-size:1.1rem;font-style:italic;text-align:center;max-width:600px}
+.lightbox .close{position:absolute;top:1.5rem;right:2rem;color:#fff;font-size:2.5rem;cursor:pointer;opacity:.7;transition:opacity .2s;background:none;border:none;font-family:inherit}
+.lightbox .close:hover{opacity:1}
+.lightbox .nav{position:absolute;top:50%;transform:translateY(-50%);color:#fff;font-size:3rem;cursor:pointer;opacity:.6;transition:opacity .2s;background:none;border:none;padding:1rem;font-family:inherit}
+.lightbox .nav:hover{opacity:1}
+.lightbox .nav.prev{left:1rem}
+.lightbox .nav.next{right:1rem}
+.counter{color:rgba(255,255,255,.5);margin-top:.5rem;font-size:.85rem}
+
+/* Footer */
+footer{text-align:center;padding:2rem;color:#999;font-size:.85rem;border-top:1px solid #e0d8cf;margin-top:2rem}
+
+@media(max-width:600px){
+  .gallery{padding:1.5rem .75rem}
+  .gallery-grid{grid-template-columns:1fr 1fr;gap:.75rem}
+  .card-info{padding:.6rem .8rem}
+  .card-info h3{font-size:.85rem}
+  .card-info p{display:none}
+}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-content">
+    <h1>California Coastal Plein Air</h1>
+    <div class="divider"></div>
+    <p class="subtitle">Big Sur · San Simeon · Carmel · Morro Bay</p>
+  </div>
+</div>
+
+<section class="gallery">
+  <div class="gallery-grid" id="grid"></div>
+</section>
+
+<div class="lightbox" id="lightbox">
+  <button class="close" onclick="closeLightbox()">&times;</button>
+  <button class="nav prev" onclick="navLightbox(-1)">&#8249;</button>
+  <button class="nav next" onclick="navLightbox(1)">&#8250;</button>
+  <img id="lb-img" src="" alt="">
+  <div class="caption" id="lb-caption"></div>
+  <div class="counter" id="lb-counter"></div>
+</div>
+
+<footer>20 AI-generated plein air paintings &middot; California Central Coast &middot; 2026</footer>
+
+<script>
+const paintings = [
+  {file:"01-bixby-bridge.png",title:"Bixby Bridge at Golden Hour",desc:"Oil painting, Big Sur — dramatic coastal cliffs and crashing waves below"},
+  {file:"02-mcway-falls.png",title:"McWay Falls Cove",desc:"Watercolor — turquoise water, purple ice plant on cliffs, Big Sur"},
+  {file:"03-hearst-castle.png",title:"Hearst Castle at Sunset",desc:"Oil painting — golden light on white marble, San Simeon"},
+  {file:"04-point-lobos.png",title:"Point Lobos Cypress in Fog",desc:"Cypress trees silhouetted against foggy sunrise, Carmel"},
+  {file:"05-highway-1.png",title:"Highway 1 Wildflowers",desc:"Impressionist — winding road along Big Sur cliffs, spring bloom"},
+  {file:"06-elephant-seals.png",title:"Piedras Blancas Elephant Seals",desc:"Oil painting — dramatic cloudy sky, crashing surf, San Simeon"},
+  {file:"07-pfeiffer-beach.png",title:"Pfeiffer Beach Purple Sand",desc:"Watercolor — sea arch with golden light streaming through"},
+  {file:"08-lone-cypress.png",title:"Lone Cypress, 17-Mile Drive",desc:"Oil painting — stormy seas, dramatic waves, Monterey"},
+  {file:"09-julia-pfeiffer.png",title:"Julia Pfeiffer Burns at Dawn",desc:"Misty redwoods meeting the ocean, ethereal light"},
+  {file:"10-carmel-beach.png",title:"Carmel-by-the-Sea Beach",desc:"Impressionist — white sand, gentle waves, pastel sunset sky"},
+  {file:"11-ragged-point.png",title:"Ragged Point Vista",desc:"Endless coastline, wildflowers in foreground, afternoon light"},
+  {file:"12-river-mouth.png",title:"Big Sur River Mouth",desc:"Oil painting — kelp forests visible, early morning mist"},
+  {file:"13-point-sur-lighthouse.png",title:"Point Sur Lighthouse",desc:"Watercolor — moody fog rolling over volcanic peak"},
+  {file:"14-garrapata.png",title:"Garrapata State Park",desc:"Turquoise tidepools, dramatic rock formations, midday sun"},
+  {file:"15-san-simeon-pier.png",title:"San Simeon Pier at Sunset",desc:"Impressionist — fishing boats, warm reflections on calm water"},
+  {file:"16-partington-cove.png",title:"Partington Cove",desc:"Oil painting — hidden beach, turquoise water, redwood canyon"},
+  {file:"17-soberanes-point.png",title:"Soberanes Point Wildflowers",desc:"Spring lupines and poppies on coastal bluffs"},
+  {file:"18-morro-rock.png",title:"Morro Rock at Dawn",desc:"Watercolor — still harbor waters reflecting pink sky"},
+  {file:"19-andrew-molera.png",title:"Andrew Molera State Park",desc:"Oil painting — horses grazing near shore, Big Sur mountains"},
+  {file:"20-limekiln-sunset.png",title:"Limekiln Sunset",desc:"Impressionist — towering sea stacks, purple and orange sky"}
+];
+
+let currentIdx = 0;
+const grid = document.getElementById('grid');
+
+paintings.forEach((p, i) => {
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.onclick = () => openLightbox(i);
+  card.innerHTML = `<img src="${p.file}" alt="${p.title}" loading="lazy"><div class="card-info"><h3>${p.title}</h3><p>${p.desc}</p></div>`;
+  grid.appendChild(card);
+});
+
+function openLightbox(i) {
+  currentIdx = i;
+  updateLightbox();
+  document.getElementById('lightbox').classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('active');
+  document.body.style.overflow = '';
+}
+function navLightbox(dir) {
+  currentIdx = (currentIdx + dir + paintings.length) % paintings.length;
+  updateLightbox();
+}
+function updateLightbox() {
+  const p = paintings[currentIdx];
+  document.getElementById('lb-img').src = p.file;
+  document.getElementById('lb-caption').textContent = p.title + ' — ' + p.desc;
+  document.getElementById('lb-counter').textContent = (currentIdx+1) + ' / ' + paintings.length;
+}
+document.addEventListener('keydown', e => {
+  if (!document.getElementById('lightbox').classList.contains('active')) return;
+  if (e.key === 'Escape') closeLightbox();
+  if (e.key === 'ArrowLeft') navLightbox(-1);
+  if (e.key === 'ArrowRight') navLightbox(1);
+});
+document.getElementById('lightbox').addEventListener('click', e => {
+  if (e.target === document.getElementById('lightbox')) closeLightbox();
+});
+</script>
+</body>
+</html>
